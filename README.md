@@ -22,4 +22,4 @@ Si quieres darle una mirada al código funcionando:
 ## Sobre el código
 Como es un proyecto de estudio para el curso, probablemente tenga cositas por mejorar, pero cumple con todos los requisitos pedidos. Si alguien quiere hacer un *fork* o armar un *pull request* para corregir algo, ¡es bienvenido!
 
-*Actualización de prueba; Pull Request*
+-Actualización de prueba; Pull Request-
