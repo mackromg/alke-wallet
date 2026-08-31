@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - Últimos Movimientos</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card mx-auto shadow-sm" style="max-width: 500px;">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Últimos Movimientos</h2>
+                
+                <!-- Filtro actualizado con la opcion de Retiros -->
+                <select id="filtro-tipo" class="form-select mb-4">
+                    <option value="todos">Mostrar todos</option>
+                    <option value="compra">Compras</option>
+                    <option value="deposito">Depósitos</option>
+                    <option value="retiro">Retiros</option>
+                    <option value="transferencia">Transferencias</option>
+                </select>
+
+                <ul class="list-group mb-4" id="lista-movimientos">
+                    <!-- Los items se inyectan acá dinamicamente -->
+                </ul>
+
+                <button id="btn-volver" class="btn btn-primary w-100">Volver al Menú Principal</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Leo el historial de la memoria
+            let listaTransacciones = JSON.parse(localStorage.getItem('historialTransacciones'));
+
+            // Historial de prueba
+            if (!listaTransacciones || listaTransacciones.length === 0) {
+                listaTransacciones = [
+                    { tipo: 'compra', detalle: 'Netflix', monto: -8500, fecha: '30/08/2026, 10:00' },
+                    { tipo: 'deposito', detalle: 'Deposito en Sucursal', monto: 50000, fecha: '29/08/2026, 18:30' },
+                    { tipo: 'compra', detalle: 'Supermercado Lider', monto: -45000, fecha: '28/08/2026, 14:15' }
+                ];
+                localStorage.setItem('historialTransacciones', JSON.stringify(listaTransacciones));
+            }
+
+            function getTipoTransaccion(tipo) {
+                switch(tipo) {
+                    case 'compra': return 'Compra';
+                    case 'deposito': return 'Depósito';
+                    case 'retiro': return 'Retiro';
+                    case 'transferencia': return 'Transferencia';
+                    default: return 'Otro';
+                }
+            }
+
+            function mostrarUltimosMovimientos(filtro) {
+                $('#lista-movimientos').empty(); 
+
+                if(listaTransacciones.length === 0) {
+                    $('#lista-movimientos').append('<li class="list-group-item text-center text-muted">No hay movimientos registrados.</li>');
+                    return;
+                }
+
+                listaTransacciones.forEach(transaccion => {
+                    if (filtro === 'todos' || transaccion.tipo === filtro) {
+                        
+                        let colorBadge = transaccion.monto > 0 ? 'success' : 'danger';
+                        let signo = transaccion.monto > 0 ? '+' : '';
+                        let montoFormateado = Math.abs(transaccion.monto).toLocaleString('es-CL');
+                        let nombreTipo = getTipoTransaccion(transaccion.tipo);
+
+                        let itemHtml = `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>${transaccion.detalle}</strong> <span class="badge bg-secondary ms-2">${nombreTipo}</span><br>
+                                    <small class="text-muted">${transaccion.fecha}</small>
+                                </div>
+                                <span class="badge bg-${colorBadge} rounded-pill fs-6">${signo} $ ${montoFormateado}</span>
+                            </li>
+                        `;
+                        $('#lista-movimientos').append(itemHtml);
+                    }
+                });
+            }
+
+            mostrarUltimosMovimientos('todos');
+
+            $('#filtro-tipo').change(function() {
+                let seleccion = $(this).val();
+                mostrarUltimosMovimientos(seleccion);
+            });
+
+            $('#btn-volver').click(() => window.location.href = 'menu.html');
+        });
+    </script>
+</body>
+</html>

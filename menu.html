@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - Menú Principal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card mx-auto shadow-sm" style="max-width: 450px;">
+            <div class="card-body text-center p-4">
+                <h2 class="mb-4">Bienvenido a Alke Wallet</h2>
+                
+                <div class="alert alert-success mb-4">
+                    <p class="mb-0">Saldo actual de la cuenta:</p>
+                    <h3 class="fw-bold" id="saldoDisplay">$ 0</h3>
+                </div>
+
+                <!-- Espacio para la leyenda de redirección -->
+                <div id="mensaje-redireccion" class="mb-3"></div>
+
+                <div class="d-grid gap-3">
+                    <button data-url="deposit.html" class="btn btn-outline-primary btn-lg btn-redirigir">Depositar</button>
+                    <button data-url="sendmoney.html" class="btn btn-outline-warning btn-lg btn-redirigir">Enviar Dinero</button>
+                    <button data-url="transactions.html" class="btn btn-outline-secondary btn-lg btn-redirigir">Últimos Movimientos</button>
+                </div>
+
+                <button id="btn-cerrar" class="btn btn-danger mt-4 w-100">Cerrar Sesión</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // cargo el saldo inicial en jQuery
+            let saldo = localStorage.getItem('saldoWallet') || 250000;
+            $('#saldoDisplay').text('$ ' + parseInt(saldo).toLocaleString('es-CL'));
+
+            // evento a los 3 botones para mostrar la leyenda antes de redirigir
+            $('.btn-redirigir').click(function() {
+                let urlDestino = $(this).data('url');
+                let nombrePantalla = $(this).text();
+                
+                // Muestro el texto que pide el ejercicio
+                $('#mensaje-redireccion').html(`<span class="text-primary fw-bold">Redirigiendo a ${nombrePantalla.toLowerCase()}...</span>`);
+                
+                setTimeout(() => window.location.href = urlDestino, 800);
+            });
+
+            $('#btn-cerrar').click(() => window.location.href = 'index.html');
+        });
+    </script>
+</body>
+</html>

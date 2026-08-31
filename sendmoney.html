@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wallet - Enviar Dinero</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <style>
+        .ui-autocomplete { border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card mx-auto shadow-sm" style="max-width: 500px;">
+            <div class="card-body p-4">
+                <h2 class="text-center mb-4">Enviar Dinero</h2>
+
+                <button type="button" id="btn-mostrar-form" class="btn btn-warning w-100 mb-3">Agregar nuevo contacto</button>
+
+                <div id="form-nuevo-contacto" class="card p-3 mb-4 bg-light" style="display: none;">
+                    <h5>Crear Contacto</h5>
+                    <form id="nuevoContactoForm">
+                        <input type="text" id="inputNombre" class="form-control mb-2" placeholder="Nombre y apellido" required>
+                        <input type="text" id="inputRut" class="form-control mb-2" placeholder="RUT (Ej: 12.345.678-9)" required>
+                        <input type="text" id="inputBanco" class="form-control mb-2" placeholder="Banco" required>
+                        
+                        <select id="inputTipo" class="form-select mb-2" required>
+                            <option value="" disabled selected>Selecciona tipo de cuenta...</option>
+                            <option value="vista">Cuenta Vista</option>
+                            <option value="corriente">Cuenta Corriente</option>
+                            <option value="ahorro">Cuenta de Ahorro</option>
+                        </select>
+                        
+                        <input type="text" id="inputCuenta" class="form-control mb-2" placeholder="N° de cuenta" required>
+                        
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="submit" class="btn btn-primary w-50">Guardar</button>
+                            <button type="button" id="btn-cancelar-form" class="btn btn-secondary w-50">Cancelar</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Buscar destinatario</label>
+                    <input type="text" id="buscador-agenda" class="form-control" placeholder="Ej: Guksu Store...">
+                </div>
+
+                <div id="bloque-enviar" style="display: none;">
+                    <div class="card bg-white border-info mb-3">
+                        <div class="card-header bg-info text-white fw-bold py-2">Datos del Destinatario</div>
+                        <div class="card-body py-2 text-start">
+                            <p class="mb-1"><strong>Nombre:</strong> <span id="dest-nombre"></span></p>
+                            <p class="mb-1"><strong>RUT:</strong> <span id="dest-rut"></span></p>
+                            <p class="mb-1"><strong>Banco:</strong> <span id="dest-banco"></span></p>
+                            <p class="mb-1"><strong>Cuenta:</strong> <span id="dest-tipo"></span> N° <span id="dest-cuenta"></span></p>
+                        </div>
+                    </div>
+                    <form id="form-enviar">
+                        <label class="form-label">Monto a transferir</label>
+                        <input type="number" id="montoEnviar" class="form-control mb-3" placeholder="$ 0" min="1" required>
+                        <button type="submit" class="btn btn-success w-100">Confirmar Transferencia</button>
+                    </form>
+                </div>
+
+                <div id="mensaje-confirmacion" class="mt-3 text-center"></div>
+                <a href="menu.html" class="btn btn-light border w-100 mt-4">Volver al Menú</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            let saldoActual = parseInt(localStorage.getItem('saldoWallet'));
+            if (isNaN(saldoActual)) {
+                saldoActual = 250000;
+                localStorage.setItem('saldoWallet', saldoActual);
+            }
+
+            let contactosGuardados = JSON.parse(localStorage.getItem('agendaContactos'));
+            let listaContactos = [];
+
+            if (contactosGuardados && contactosGuardados.length > 0) {
+                listaContactos = contactosGuardados;
+            } else {
+                listaContactos = [
+                    { label: "Eric Vergara", rut: "11.111.111-1", banco: "Banco Falabella", tipo: "corriente", cuenta: "12345678" },
+                    { label: "Sasha Ramírez", rut: "19.876.543-2", banco: "Banco Estado", tipo: "vista", cuenta: "987654321" },
+                    { label: "Guksu Store", rut: "76.543.210-K", banco: "Banco Santander", tipo: "corriente", cuenta: "555555" }
+                ];
+                localStorage.setItem('agendaContactos', JSON.stringify(listaContactos));
+            }
+
+            $('#btn-mostrar-form').click(() => $('#form-nuevo-contacto').slideDown());
+            $('#btn-cancelar-form').click(() => $('#form-nuevo-contacto').slideUp());
+
+            $('#nuevoContactoForm').submit(function(e) {
+                e.preventDefault();
+                let nombre = $('#inputNombre').val();
+                let rut = $('#inputRut').val();
+                let banco = $('#inputBanco').val();
+                let tipo = $('#inputTipo').val();
+                let cuenta = $('#inputCuenta').val();
+
+                if (!/^[0-9]+$/.test(cuenta)) {
+                    alert('Atención: El número de cuenta debe contener únicamente números.');
+                    return;
+                }
+
+                listaContactos.push({ label: nombre, rut: rut, banco: banco, tipo: tipo, cuenta: cuenta });
+                localStorage.setItem('agendaContactos', JSON.stringify(listaContactos));
+                $('#buscador-agenda').autocomplete("option", "source", listaContactos);
+                
+                alert('Contacto "' + nombre + '" guardado con éxito en tu agenda.');
+                $('#form-nuevo-contacto').slideUp();
+                this.reset();
+            });
+
+            $('#buscador-agenda').autocomplete({
+                source: listaContactos,
+                select: function(event, ui) {
+                    $('#dest-nombre').text(ui.item.label);
+                    $('#dest-rut').text(ui.item.rut);
+                    $('#dest-banco').text(ui.item.banco);
+                    let tipoCapitalizado = ui.item.tipo.charAt(0).toUpperCase() + ui.item.tipo.slice(1);
+                    $('#dest-tipo').text('Cuenta ' + tipoCapitalizado);
+                    $('#dest-cuenta').text(ui.item.cuenta);
+                    $('#bloque-enviar').slideDown();
+                    $(this).val(ui.item.label);
+                    return false; 
+                }
+            });
+
+            $('#form-enviar').submit(function(e) {
+                e.preventDefault();
+                let monto = parseInt($('#montoEnviar').val());
+                
+                if(isNaN(monto) || monto <= 0) {
+                    $('#mensaje-confirmacion').html('<div class="alert alert-warning">Monto inválido.</div>');
+                    return;
+                }
+                if(monto > saldoActual) {
+                    $('#mensaje-confirmacion').html('<div class="alert alert-danger">Error: Saldo insuficiente.</div>');
+                    return;
+                }
+                if(monto > 500000) {
+                    $('#mensaje-confirmacion').html('<div class="alert alert-danger">Error: Excede el límite de $500.000 por transferencia.</div>');
+                    return;
+                }
+                
+                saldoActual -= monto;
+                localStorage.setItem('saldoWallet', saldoActual);
+
+                // NUEVO: Verificamos historial base para sumarle la transferencia
+                let historial = JSON.parse(localStorage.getItem('historialTransacciones'));
+                if (!historial || historial.length === 0) {
+                    historial = [
+                        { tipo: 'compra', detalle: 'Netflix', monto: -8500, fecha: '30/08/2026, 10:00' },
+                        { tipo: 'deposito', detalle: 'Carga en cajero', monto: 50000, fecha: '29/08/2026, 18:30' },
+                        { tipo: 'compra', detalle: 'Supermercado Lider', monto: -45000, fecha: '28/08/2026, 14:15' }
+                    ];
+                }
+
+                let fechaActual = new Date().toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+                let nombreDestino = $('#dest-nombre').text();
+                
+                // Se suma a la lista global de movimientos
+                historial.unshift({ tipo: 'transferencia', detalle: 'Transferencia a ' + nombreDestino, monto: -monto, fecha: fechaActual });
+                localStorage.setItem('historialTransacciones', JSON.stringify(historial));
+                
+                $('#bloque-enviar').slideUp();
+                $('#mensaje-confirmacion').html('<div class="alert alert-success">¡Transferencia exitosa! Volviendo al menú...</div>');
+                setTimeout(() => window.location.href = 'menu.html', 2000);
+            });
+        });
+    </script>
+</body>
+</html>
